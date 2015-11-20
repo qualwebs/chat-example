@@ -3,32 +3,40 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var jwt = require('jsonwebtoken');
 var jwtSecret = 'shhhhhhared-secret';
+var names = [];
+
 //LOAD index.html
 app.get('/', function(req, res){
   res.sendFile(__dirname + '/index.html');
 });
-// USER AUTH
-app.get('/login', function (req, res) {
 
-  // TODO: validate the actual user user
-  var profile = {
-    first_name: 'John',
-    last_name: 'Doe',
-    email: 'john@doe.com',
-    id: 123
-  };
-
-  // we are sending the profile in the token
-  var token = jwt.sign(profile, jwtSecret, { expiresInMinutes: 60*5 });
-
-  res.json({token: token});
-});
 //SOCKET CONNECTION
 io.on('connection', function(socket){
-  socket.on('chat message', function(msg){
-    io.emit('chat message', msg);
-    console.log(msg);
+  //Add user to room
+  socket.on('new user', function(name,callback){
+    if (names.indexOf(name) != -1) {
+      callback(false);
+    }
+    else{
+      callback(true);
+      socket.nickname = name;
+      names.push(socket.nickname);
+      updateNames()
+    }
   });
+  function updateNames(){
+    io.emit('usernames',names);
+  }
+  //Emit message
+  socket.on('chat message', function(msg){
+    io.emit('chat message',{name: socket.nickname,msg:msg});
+  });
+  //disconnetion
+  socket.on('disconnect',function(data){
+      if (!socket.nickname) return;
+      names.splice(names.indexOf(socket.nickname),1);
+      updateNames();
+    });
 });
 
 http.listen(3000, function(){
