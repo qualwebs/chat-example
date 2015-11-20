@@ -22,5 +22,11 @@
     "heroku",
     "express"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qualwebs/chat-example/issues"
+  },
+  "homepage": "https://github.com/qualwebs/chat-example",
+  "devDependencies": {},
+  "author": ""
 }
